@@ -16,46 +16,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = `For the recipe "${recipeName}", generate a complete shopping list organized by supermarket aisle. 
+    const prompt = `Generate a shopping list for "${recipeName}" organized by supermarket aisle.
 
-First, determine all ingredients with quantities needed for this recipe. Then organize them by typical supermarket aisles.
+CRITICAL: Your response must be ONLY valid JSON, no extra text or formatting.
 
-Return ONLY a JSON object in this exact format:
+Required JSON format:
 {
-  "Produce": [
-    {"ingredient": "onions", "quantity": "2 large"},
-    {"ingredient": "tomatoes", "quantity": "4 medium"}
-  ],
-  "Dairy": [
-    {"ingredient": "milk", "quantity": "1 gallon"}
-  ],
-  "Meat & Seafood": [
-    {"ingredient": "chicken breast", "quantity": "1 lb"}
-  ]
+  "Produce": [{"ingredient": "onions", "quantity": "2 large"}],
+  "Dairy": [{"ingredient": "milk", "quantity": "1 cup"}]
 }
 
-Use these common aisles when appropriate: Produce, Dairy, Meat & Seafood, Pantry/Dry Goods, Frozen Foods, Bakery, Canned Goods, Condiments & Sauces, Spices & Seasonings, Beverages.
+Available aisles: Produce, Dairy, Meat & Seafood, Pantry/Dry Goods, Frozen Foods, Bakery, Canned Goods, Condiments & Sauces, Spices & Seasonings, Beverages.
 
-Recipe: ${recipeName}`;
+Recipe: ${recipeName}
+
+JSON response:`;
 
     const response = await cohere.chat({
       model: 'command-light',
       message: prompt,
-      maxTokens: 400,
+      maxTokens: 500,
       temperature: 0.1,
     });
 
-    const generatedText = response.text.trim();
+    let generatedText = response.text.trim();
+    
+    // Clean up common formatting issues
+    generatedText = generatedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    generatedText = generatedText.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+    
+    console.log('Raw AI response:', generatedText);
     
     try {
       // Try to parse the JSON response
       const organizedIngredients = JSON.parse(generatedText);
+      
+      // Validate the structure
+      if (typeof organizedIngredients !== 'object' || organizedIngredients === null) {
+        throw new Error('Response is not a valid object');
+      }
+      
       return NextResponse.json({ organizedIngredients });
-    } catch {
+    } catch (parseError) {
+      console.error('JSON parsing failed:', parseError);
       // If JSON parsing fails, return raw text for debugging
       return NextResponse.json({ 
         error: 'Failed to parse shopping list',
-        rawResponse: generatedText 
+        rawResponse: generatedText,
+        parseError: parseError instanceof Error ? parseError.message : 'Unknown parse error'
       }, { status: 500 });
     }
 
