@@ -23,6 +23,7 @@ export default function Home() {
   const [, setDraggedAisle] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Enhanced scroll tracking with parallax
   useEffect(() => {
@@ -51,6 +52,19 @@ export default function Home() {
       setTimeout(() => inputRef.current?.focus(), 500);
     }
   }, [loading]);
+
+  // Auto-scroll to results when they're ready
+  useEffect(() => {
+    if ((Object.keys(organizedIngredients).length > 0 || ingredients.length > 0) && resultsRef.current) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }, 300); // Small delay to ensure DOM is updated
+    }
+  }, [organizedIngredients, ingredients]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,6 +192,9 @@ export default function Home() {
     return colors[index % colors.length];
   };
 
+  // Check if results are present to adjust header size
+  const hasResults = Object.keys(organizedIngredients).length > 0 || ingredients.length > 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-hidden">
       {/* Dynamic floating background elements */}
@@ -219,72 +236,90 @@ export default function Home() {
       <div className={`relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Fun and vibrant header */}
+          {/* Fun and vibrant header - compact when results are present */}
           <header 
-            className="pt-20 pb-16 text-center relative"
+            className={`text-center relative transition-all duration-700 ${
+              hasResults 
+                ? 'pt-8 pb-8' // Compact when results are present
+                : 'pt-20 pb-16' // Full size when no results
+            }`}
             style={{ opacity: Math.max(0.4, 1 - scrollY / 400) }}
           >
-            {/* Animated hero icon */}
-            <div className="relative inline-flex items-center justify-center mb-8">
+            {/* Animated hero icon - smaller when results are present */}
+            <div className="relative inline-flex items-center justify-center mb-6">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-2xl opacity-60 animate-pulse"></div>
-              <div className="relative w-32 h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-2xl shadow-purple-500/30 flex items-center justify-center transform hover:scale-110 hover:rotate-12 transition-all duration-700 cursor-pointer group">
+              <div className={`relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-2xl shadow-purple-500/30 flex items-center justify-center transform hover:scale-110 hover:rotate-12 transition-all duration-700 cursor-pointer group ${
+                hasResults ? 'w-20 h-20' : 'w-32 h-32'
+              }`}>
                 <div className="absolute inset-2 bg-gradient-to-br from-white/20 to-transparent rounded-full"></div>
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-300">🛒</span>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce">
-                  <span className="text-lg">✨</span>
+                <span className={`group-hover:scale-110 transition-transform duration-300 ${
+                  hasResults ? 'text-3xl' : 'text-5xl'
+                }`}>🛒</span>
+                <div className={`absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce ${
+                  hasResults ? 'w-6 h-6' : 'w-8 h-8'
+                }`}>
+                  <span className={hasResults ? 'text-sm' : 'text-lg'}>✨</span>
                 </div>
               </div>
             </div>
             
-            {/* Dynamic gradient title */}
-            <h1 className="text-7xl sm:text-8xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-8 tracking-tight relative">
+            {/* Dynamic gradient title - smaller when results are present */}
+            <h1 className={`font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight relative transition-all duration-700 ${
+              hasResults 
+                ? 'text-4xl sm:text-5xl mb-4' // Compact when results are present
+                : 'text-7xl sm:text-8xl mb-8' // Full size when no results
+            }`}>
               <span className="relative">
                 Recipe Organizer
                 <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-lg opacity-10 blur-xl"></div>
               </span>
             </h1>
             
-            {/* Fun subtitle with animations */}
-            <div className="max-w-4xl mx-auto mb-8">
-              <p className="text-2xl text-gray-700 leading-relaxed font-medium mb-4">
-                Transform any recipe into an 
-                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold"> intelligently organized </span>
-                shopping experience
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 text-lg">
-                <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 rounded-full font-semibold">🤖 AI-Powered</span>
-                <span className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full font-semibold">🏪 Aisle Organized</span>
-                <span className="px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full font-semibold">⚡ Instant</span>
+            {/* Fun subtitle with animations - hide when results are present */}
+            {!hasResults && (
+              <div className="max-w-4xl mx-auto mb-8">
+                <p className="text-2xl text-gray-700 leading-relaxed font-medium mb-4">
+                  Transform any recipe into an 
+                  <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold"> intelligently organized </span>
+                  shopping experience
+                </p>
+                <div className="flex flex-wrap justify-center gap-4 text-lg">
+                  <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 rounded-full font-semibold">🤖 AI-Powered</span>
+                  <span className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full font-semibold">🏪 Aisle Organized</span>
+                  <span className="px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full font-semibold">⚡ Instant</span>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Interactive demo elements */}
-            <div className="flex justify-center space-x-8 mb-8">
-              <div className="animate-float" style={{ animationDelay: '0s' }}>
-                <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
-                  <span className="text-2xl">🍅</span>
+            {/* Interactive demo elements - hide when results are present */}
+            {!hasResults && (
+              <div className="flex justify-center space-x-8 mb-8">
+                <div className="animate-float" style={{ animationDelay: '0s' }}>
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                    <span className="text-2xl">🍅</span>
+                  </div>
+                </div>
+                <div className="animate-float" style={{ animationDelay: '0.5s' }}>
+                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                    <span className="text-2xl">🧀</span>
+                  </div>
+                </div>
+                <div className="animate-float" style={{ animationDelay: '1s' }}>
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                    <span className="text-2xl">🥬</span>
+                  </div>
+                </div>
+                <div className="animate-float" style={{ animationDelay: '1.5s' }}>
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                    <span className="text-2xl">🥛</span>
+                  </div>
                 </div>
               </div>
-              <div className="animate-float" style={{ animationDelay: '0.5s' }}>
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
-                  <span className="text-2xl">🧀</span>
-                </div>
-              </div>
-              <div className="animate-float" style={{ animationDelay: '1s' }}>
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
-                  <span className="text-2xl">🥬</span>
-                </div>
-              </div>
-              <div className="animate-float" style={{ animationDelay: '1.5s' }}>
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
-                  <span className="text-2xl">🥛</span>
-                </div>
-              </div>
-            </div>
+            )}
           </header>
 
           {/* Enhanced input section with more style */}
-          <section className="mb-20">
+          <section className={`transition-all duration-700 ${hasResults ? 'mb-8' : 'mb-20'}`}>
             <div className="max-w-3xl mx-auto">
               <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] border-2 border-white/60 shadow-2xl shadow-purple-500/10 p-10 hover:shadow-3xl hover:shadow-purple-500/20 transition-all duration-700 group">
                 {/* Decorative elements */}
@@ -304,7 +339,7 @@ export default function Home() {
                         value={recipeName}
                         onChange={(e) => setRecipeName(e.target.value)}
                         placeholder="Try 'Spicy Thai Curry', 'Grandma's Apple Pie', or 'Perfect Pasta Carbonara'..."
-                        className="w-full px-8 py-6 text-xl bg-gradient-to-r from-gray-50 to-white border-3 border-gray-200/60 rounded-3xl focus:bg-white focus:border-purple-400 focus:ring-6 focus:ring-purple-400/20 transition-all duration-500 outline-none placeholder-gray-400 font-medium shadow-inner group-focus-within:shadow-lg"
+                        className="w-full px-8 py-6 text-xl text-gray-900 bg-gradient-to-r from-gray-50 to-white border-3 border-gray-200/60 rounded-3xl focus:bg-white focus:border-purple-400 focus:ring-6 focus:ring-purple-400/20 transition-all duration-500 outline-none placeholder-gray-400 font-medium shadow-inner group-focus-within:shadow-lg"
                         disabled={loading}
                       />
                       <div className="absolute right-6 top-1/2 transform -translate-y-1/2 transition-all duration-500 group-focus-within/input:scale-125 group-focus-within/input:rotate-12">
@@ -360,9 +395,20 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Shopping list section remains the same but with enhanced styling */}
+          {/* Results indicator - shows when results are ready */}
+          {hasResults && (
+            <div className="flex justify-center mb-8">
+              <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-8 py-3 rounded-full shadow-lg flex items-center space-x-2 animate-bounce">
+                <span className="text-lg">🎉</span>
+                <span className="font-bold">Your shopping list is ready!</span>
+                <span className="text-lg">🛍️</span>
+              </div>
+            </div>
+          )}
+
+          {/* Shopping list section with ref for auto-scroll */}
           {Object.keys(organizedIngredients).length > 0 && (
-            <section className="pb-20">
+            <section ref={resultsRef} className="pb-20">
               <div className="bg-white/70 backdrop-blur-2xl rounded-[3rem] border-2 border-white/40 shadow-2xl shadow-indigo-500/10 p-8 sm:p-12">
                 
                 {/* Enhanced header */}
@@ -553,9 +599,9 @@ export default function Home() {
             </section>
           )}
 
-          {/* Enhanced fallback state */}
+          {/* Enhanced fallback state with ref for auto-scroll */}
           {ingredients.length > 0 && Object.keys(organizedIngredients).length === 0 && (
-            <section className="pb-20">
+            <section ref={resultsRef} className="pb-20">
               <div className="bg-white/70 backdrop-blur-2xl rounded-[3rem] border-2 border-orange-200/60 shadow-2xl shadow-orange-500/10 p-8 sm:p-12">
                 <div className="text-center mb-10">
                   <div className="w-24 h-24 bg-gradient-to-br from-orange-400 via-red-400 to-pink-500 rounded-full mx-auto mb-8 flex items-center justify-center shadow-2xl animate-pulse">
