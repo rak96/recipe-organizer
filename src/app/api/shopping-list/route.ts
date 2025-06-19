@@ -8,20 +8,37 @@ const cohere = new CohereClient({
 
 
 // Fallback function to create a basic shopping list from recipe name
-function createFallbackShoppingList(recipeName: string): any {
+interface ShoppingItem {
+  ingredient: string;
+  quantity: string;
+}
+
+interface ShoppingList {
+  [aisle: string]: ShoppingItem[];
+}
+
+function createFallbackShoppingList(recipeName: string): ShoppingList {
   return {
     "Pantry/Dry Goods": [
-      { "ingredient": "basic ingredients", "quantity": "as needed" }
+      { "ingredient": "basic ingredients", "quantity": "as needed" },
+      { "ingredient": `Check recipe for "${recipeName}"`, "quantity": "as needed" }
     ],
     "Produce": [
       { "ingredient": "fresh ingredients", "quantity": "as needed" }
     ],
-    "Note": `Please check the original recipe for "${recipeName}" for exact ingredients and quantities.`
+    "Dairy": [],
+    "Meat & Seafood": [],
+    "Frozen Foods": [],
+    "Bakery": [],
+    "Canned Goods": [],
+    "Condiments & Sauces": [],
+    "Spices & Seasonings": [],
+    "Beverages": []
   };
 }
 
 // Helper function to try parsing with smart cleaning
-function tryParseWithCleaning(text: string): any {
+function tryParseWithCleaning(text: string): unknown {
   // Clean common formatting issues
   let cleaned = text.trim();
   
@@ -65,7 +82,14 @@ function tryParseWithCleaning(text: string): any {
 }
 
 // Helper function to normalize aisle names and structure
-function normalizeShoppingList(rawData: any): any {
+function normalizeShoppingList(rawData: unknown): ShoppingList {
+  // Type guard to ensure rawData is an object
+  if (!rawData || typeof rawData !== 'object') {
+    return createFallbackShoppingList('unknown');
+  }
+
+  const data = rawData as Record<string, unknown>;
+  
   const aisleMapping: { [key: string]: string } = {
     'produce': 'Produce',
     'dairy': 'Dairy', 
@@ -85,7 +109,7 @@ function normalizeShoppingList(rawData: any): any {
     'beverages': 'Beverages'
   };
 
-  const normalized: any = {};
+  const normalized: ShoppingList = {};
   
   // Initialize all expected aisles
   Object.values(aisleMapping).forEach(aisle => {
@@ -93,30 +117,35 @@ function normalizeShoppingList(rawData: any): any {
   });
   
   // Process the raw data
-  Object.keys(rawData).forEach(key => {
+  Object.keys(data).forEach(key => {
     const normalizedKey = aisleMapping[key.toLowerCase()] || key;
-    let items = rawData[key];
+    const rawItems = data[key];
     
-    // Handle nested arrays: [[{...}]] → [{...}]
-    if (Array.isArray(items) && items.length > 0 && Array.isArray(items[0])) {
-      items = items.flat();
-    }
+    // Convert to array if needed
+    let itemsArray: unknown[] = [];
     
-    // Ensure it's an array
-    if (!Array.isArray(items)) {
-      items = [];
+    if (Array.isArray(rawItems)) {
+      itemsArray = rawItems;
+      // Handle nested arrays: [[{...}]] → [{...}]
+      if (itemsArray.length > 0 && Array.isArray(itemsArray[0])) {
+        itemsArray = itemsArray.flat();
+      }
     }
     
     // Normalize each item
-    const normalizedItems = items.map((item: any) => {
+    const normalizedItems: ShoppingItem[] = itemsArray.map((item: unknown) => {
       if (typeof item === 'string') {
         return { ingredient: item, quantity: '1' };
       }
-      return {
-        ingredient: item.ingredient || 'Unknown item',
-        quantity: String(item.quantity || '1')
-      };
-    }).filter((item: any) => item.ingredient !== 'Unknown item');
+      if (typeof item === 'object' && item !== null) {
+        const obj = item as Record<string, unknown>;
+        return {
+          ingredient: String(obj.ingredient || 'Unknown item'),
+          quantity: String(obj.quantity || '1')
+        };
+      }
+      return { ingredient: 'Unknown item', quantity: '1' };
+    }).filter((item: ShoppingItem) => item.ingredient !== 'Unknown item');
     
     normalized[normalizedKey] = normalizedItems;
   });
@@ -162,12 +191,12 @@ Return a JSON object with aisle names as keys and arrays of ingredient objects a
           temperature: attempt === 1 ? 0.1 : 0.3, // Slightly more creativity on retries
         });
 
-        let generatedText = fastResponse.text.trim();
+        const generatedText = fastResponse.text.trim();
         console.log(`Attempt ${attempt} response time: ${Date.now() - attemptStartTime}ms`);
         console.log(`Raw attempt ${attempt} response:`, generatedText.substring(0, 200) + '...');
         
         // Try to parse the fast response
-        let parsedData = tryParseWithCleaning(generatedText);
+        const parsedData = tryParseWithCleaning(generatedText);
         
         // Validate the structure
         if (typeof parsedData !== 'object' || parsedData === null) {
@@ -227,12 +256,12 @@ Expected format:
         temperature: 0.1,
       });
 
-      let cleanedText = cleanupResponse.text.trim();
+      const cleanedText = cleanupResponse.text.trim();
       console.log(`JSON cleanup response time: ${Date.now() - cleanupStartTime}ms`);
       console.log('Cleanup response:', cleanedText.substring(0, 200) + '...');
       
       // Try to parse the cleaned response
-      let parsedData = tryParseWithCleaning(cleanedText);
+      const parsedData = tryParseWithCleaning(cleanedText);
       
       // Validate and normalize
       if (typeof parsedData === 'object' && parsedData !== null) {
@@ -270,7 +299,7 @@ Expected format:
       responseFormat: { type: "json_object" }
     });
 
-    let generatedText = reliableResponse.text.trim();
+    const generatedText = reliableResponse.text.trim();
     console.log(`Reliable model response time: ${Date.now() - reliableStartTime}ms`);
     console.log('Raw reliable response:', generatedText);
     
