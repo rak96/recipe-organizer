@@ -21,24 +21,34 @@ export default function Home() {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [, setDraggedAisle] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Apple-style smooth scroll tracking
+  // Enhanced scroll tracking with parallax
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
-  // Apple-style entrance animation
+  // Stylish entrance animation
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
-  // Focus input on load (Apple UX pattern)
+  // Auto-focus with style
   useEffect(() => {
     if (inputRef.current && !loading) {
-      inputRef.current.focus();
+      setTimeout(() => inputRef.current?.focus(), 500);
     }
   }, [loading]);
 
@@ -169,65 +179,138 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 relative overflow-hidden">
-      {/* Apple-style dynamic background with parallax */}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-hidden">
+      {/* Dynamic floating background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Large animated blobs */}
         <div 
-          className="absolute -top-96 -right-96 w-[800px] h-[800px] bg-gradient-to-br from-blue-100/40 to-purple-100/40 rounded-full blur-3xl"
-          style={{ transform: `translate(${scrollY * 0.1}px, ${scrollY * 0.05}px)` }}
+          className="absolute -top-96 -right-96 w-[800px] h-[800px] bg-gradient-to-br from-purple-200/30 to-pink-200/30 rounded-full blur-3xl animate-pulse"
+          style={{ 
+            transform: `translate(${scrollY * 0.1 + mousePosition.x * 0.02}px, ${scrollY * 0.05 + mousePosition.y * 0.02}px)`,
+            animationDuration: '4s'
+          }}
         />
         <div 
-          className="absolute -bottom-96 -left-96 w-[800px] h-[800px] bg-gradient-to-tr from-green-100/40 to-blue-100/40 rounded-full blur-3xl"
-          style={{ transform: `translate(${-scrollY * 0.1}px, ${-scrollY * 0.05}px)` }}
+          className="absolute -bottom-96 -left-96 w-[800px] h-[800px] bg-gradient-to-tr from-blue-200/30 to-cyan-200/30 rounded-full blur-3xl animate-pulse"
+          style={{ 
+            transform: `translate(${-scrollY * 0.1 - mousePosition.x * 0.02}px, ${-scrollY * 0.05 - mousePosition.y * 0.02}px)`,
+            animationDuration: '3s',
+            animationDelay: '1s'
+          }}
         />
+        <div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-emerald-200/25 to-teal-200/25 rounded-full blur-2xl animate-pulse"
+          style={{ 
+            transform: `translate(${scrollY * 0.15}px, ${scrollY * 0.08}px)`,
+            animationDuration: '5s',
+            animationDelay: '2s'
+          }}
+        />
+
+        {/* Floating food emojis */}
+        <div className="absolute top-20 left-20 text-4xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}>🍎</div>
+        <div className="absolute top-40 right-32 text-3xl animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }}>🥕</div>
+        <div className="absolute bottom-60 left-16 text-5xl animate-bounce" style={{ animationDelay: '2s', animationDuration: '3.5s' }}>🍕</div>
+        <div className="absolute bottom-40 right-20 text-3xl animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '4.5s' }}>🥐</div>
+        <div className="absolute top-60 left-1/2 text-4xl animate-bounce" style={{ animationDelay: '1.5s', animationDuration: '3s' }}>🍳</div>
+        <div className="absolute bottom-96 right-1/3 text-3xl animate-bounce" style={{ animationDelay: '3s', animationDuration: '4s' }}>🧄</div>
       </div>
 
-      <div className={`relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+      <div className={`relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Apple-style header with dynamic opacity */}
+          {/* Fun and vibrant header */}
           <header 
-            className="pt-16 pb-12 text-center"
-            style={{ opacity: Math.max(0.3, 1 - scrollY / 300) }}
+            className="pt-20 pb-16 text-center relative"
+            style={{ opacity: Math.max(0.4, 1 - scrollY / 400) }}
           >
-            <div className="inline-flex items-center justify-center mb-8">
-              <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl shadow-2xl shadow-blue-500/25 flex items-center justify-center transform transition-transform hover:scale-110 hover:rotate-3 duration-500">
-                  <span className="text-3xl">🛒</span>
+            {/* Animated hero icon */}
+            <div className="relative inline-flex items-center justify-center mb-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-2xl opacity-60 animate-pulse"></div>
+              <div className="relative w-32 h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-2xl shadow-purple-500/30 flex items-center justify-center transform hover:scale-110 hover:rotate-12 transition-all duration-700 cursor-pointer group">
+                <div className="absolute inset-2 bg-gradient-to-br from-white/20 to-transparent rounded-full"></div>
+                <span className="text-5xl group-hover:scale-110 transition-transform duration-300">🛒</span>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce">
+                  <span className="text-lg">✨</span>
                 </div>
-                <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-3xl opacity-20 blur-xl animate-pulse"></div>
               </div>
             </div>
             
-            <h1 className="text-6xl sm:text-7xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-6 tracking-tight">
-              Recipe Organizer
+            {/* Dynamic gradient title */}
+            <h1 className="text-7xl sm:text-8xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-8 tracking-tight relative">
+              <span className="relative">
+                Recipe Organizer
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-lg opacity-10 blur-xl"></div>
+              </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-              Transform any recipe into an intelligently organized shopping experience
-            </p>
+            
+            {/* Fun subtitle with animations */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <p className="text-2xl text-gray-700 leading-relaxed font-medium mb-4">
+                Transform any recipe into an 
+                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold"> intelligently organized </span>
+                shopping experience
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 text-lg">
+                <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 rounded-full font-semibold">🤖 AI-Powered</span>
+                <span className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full font-semibold">🏪 Aisle Organized</span>
+                <span className="px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full font-semibold">⚡ Instant</span>
+              </div>
+            </div>
+
+            {/* Interactive demo elements */}
+            <div className="flex justify-center space-x-8 mb-8">
+              <div className="animate-float" style={{ animationDelay: '0s' }}>
+                <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                  <span className="text-2xl">🍅</span>
+                </div>
+              </div>
+              <div className="animate-float" style={{ animationDelay: '0.5s' }}>
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                  <span className="text-2xl">🧀</span>
+                </div>
+              </div>
+              <div className="animate-float" style={{ animationDelay: '1s' }}>
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                  <span className="text-2xl">🥬</span>
+                </div>
+              </div>
+              <div className="animate-float" style={{ animationDelay: '1.5s' }}>
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+                  <span className="text-2xl">🥛</span>
+                </div>
+              </div>
+            </div>
           </header>
 
-          {/* Apple-style input section */}
-          <section className="mb-16">
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-white/50 shadow-2xl shadow-black/5 p-8 hover:shadow-3xl transition-all duration-700">
+          {/* Enhanced input section with more style */}
+          <section className="mb-20">
+            <div className="max-w-3xl mx-auto">
+              <div className="relative bg-white/90 backdrop-blur-2xl rounded-[3rem] border-2 border-white/60 shadow-2xl shadow-purple-500/10 p-10 hover:shadow-3xl hover:shadow-purple-500/20 transition-all duration-700 group">
+                {/* Decorative elements */}
+                <div className="absolute -top-6 -left-6 w-12 h-12 bg-gradient-to-br from-pink-400 to-red-400 rounded-full opacity-60 animate-pulse"></div>
+                <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full opacity-40 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                
                 <form onSubmit={handleSubmit} className="space-y-8">
-                  <div className="space-y-4">
-                    <label className="block text-lg font-semibold text-gray-800 tracking-wide">
-                      What would you like to cook?
+                  <div className="space-y-6">
+                    <label className="block text-2xl font-bold text-center bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                      What delicious dish are you craving? 
+                      <span className="text-3xl ml-2">🤤</span>
                     </label>
-                    <div className="relative group">
+                    <div className="relative group/input">
                       <input
                         ref={inputRef}
                         type="text"
                         value={recipeName}
                         onChange={(e) => setRecipeName(e.target.value)}
-                        placeholder="Try 'Chicken Alfredo' or 'Chocolate Chip Cookies'"
-                        className="w-full px-6 py-5 text-lg bg-gray-50/50 border-2 border-gray-200/50 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 outline-none placeholder-gray-400 font-medium"
+                        placeholder="Try 'Spicy Thai Curry', 'Grandma's Apple Pie', or 'Perfect Pasta Carbonara'..."
+                        className="w-full px-8 py-6 text-xl bg-gradient-to-r from-gray-50 to-white border-3 border-gray-200/60 rounded-3xl focus:bg-white focus:border-purple-400 focus:ring-6 focus:ring-purple-400/20 transition-all duration-500 outline-none placeholder-gray-400 font-medium shadow-inner group-focus-within:shadow-lg"
                         disabled={loading}
                       />
-                      <div className="absolute right-5 top-1/2 transform -translate-y-1/2 transition-all duration-300 group-focus-within:scale-110">
-                        <span className="text-2xl">👨‍🍳</span>
+                      <div className="absolute right-6 top-1/2 transform -translate-y-1/2 transition-all duration-500 group-focus-within/input:scale-125 group-focus-within/input:rotate-12">
+                        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-400 rounded-full flex items-center justify-center shadow-lg">
+                          <span className="text-2xl">👨‍🍳</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -235,23 +318,24 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={loading || !recipeName.trim()}
-                    className="group relative w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-5 px-8 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/25 hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none disabled:shadow-none"
+                    className="group relative w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-6 px-10 rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/30 hover:-translate-y-1 hover:scale-[1.02] disabled:opacity-50 disabled:transform-none disabled:shadow-none"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span className="relative z-10 flex items-center justify-center text-lg">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 animate-shimmer"></div>
+                    <span className="relative z-10 flex items-center justify-center text-xl">
                       {loading ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin -ml-1 mr-4 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          <span className="animate-pulse">Creating your list...</span>
+                          <span className="animate-pulse">Creating your magical shopping list...</span>
                         </>
                       ) : (
                         <>
-                          <span className="mr-2">✨</span>
-                          Generate Shopping List
-                          <span className="ml-2">✨</span>
+                          <span className="mr-3 text-2xl">🪄</span>
+                          Generate My Smart Shopping List
+                          <span className="ml-3 text-2xl">✨</span>
                         </>
                       )}
                     </span>
@@ -259,13 +343,15 @@ export default function Home() {
                 </form>
 
                 {error && (
-                  <div className="mt-6 p-5 bg-red-50/80 border border-red-200/50 rounded-2xl backdrop-blur-sm animate-shake">
+                  <div className="mt-8 p-6 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200/60 rounded-3xl backdrop-blur-sm animate-shake">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <span className="text-2xl">⚠️</span>
+                        <div className="w-12 h-12 bg-gradient-to-r from-red-400 to-pink-400 rounded-full flex items-center justify-center">
+                          <span className="text-2xl">😵</span>
+                        </div>
                       </div>
-                      <div className="ml-3">
-                        <p className="text-red-800 font-medium">{error}</p>
+                      <div className="ml-4">
+                        <p className="text-red-800 font-semibold text-lg">{error}</p>
                       </div>
                     </div>
                   </div>
@@ -274,44 +360,50 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Apple-style shopping list with sophisticated animations */}
+          {/* Shopping list section remains the same but with enhanced styling */}
           {Object.keys(organizedIngredients).length > 0 && (
             <section className="pb-20">
-              <div className="bg-white/60 backdrop-blur-2xl rounded-[2.5rem] border border-white/30 shadow-2xl shadow-black/5 p-8 sm:p-12">
+              <div className="bg-white/70 backdrop-blur-2xl rounded-[3rem] border-2 border-white/40 shadow-2xl shadow-indigo-500/10 p-8 sm:p-12">
                 
-                {/* Sophisticated header with live progress */}
+                {/* Enhanced header */}
                 <header className="mb-12">
-                  <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-                    <div>
-                      <h2 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">
-                        Shopping List
-                      </h2>
-                      <p className="text-xl text-gray-600">
-                        for <span className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{recipeName}</span>
+                  <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+                    <div className="text-center lg:text-left">
+                      <div className="flex items-center justify-center lg:justify-start mb-4">
+                        <span className="text-5xl mr-4">🛍️</span>
+                        <h2 className="text-5xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+                          Shopping List
+                        </h2>
+                      </div>
+                      <p className="text-2xl text-gray-600 font-medium">
+                        for your amazing <span className="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{recipeName}</span>
                       </p>
                     </div>
                     
-                    {/* Apple-style progress indicator */}
-                    <div className="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border border-gray-200/50 shadow-lg min-w-[280px]">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-semibold text-gray-700">Overall Progress</span>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                          {totalProgress()}%
-                        </span>
+                    {/* Enhanced progress indicator */}
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-8 border-2 border-indigo-200/50 shadow-lg min-w-[320px]">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-lg font-bold text-gray-700">Overall Progress</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            {totalProgress()}%
+                          </span>
+                          <span className="text-2xl">{totalProgress() === 100 ? '🎉' : '⏳'}</span>
+                        </div>
                       </div>
-                      <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                         <div 
-                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-1000 ease-out shadow-lg"
+                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-1000 ease-out shadow-lg"
                           style={{ width: `${totalProgress()}%` }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent rounded-full"></div>
                       </div>
                     </div>
                   </div>
                 </header>
                 
-                {/* Apple-style masonry grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {/* Aisle grid with enhanced styling */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {Object.entries(organizedIngredients).map(([aisle, items], aisleIndex) => {
                     const progress = getAisleProgress(aisle);
                     const progressPercent = progress.total > 0 ? (progress.checked / progress.total) * 100 : 0;
@@ -321,43 +413,43 @@ export default function Home() {
                     return (
                       <div 
                         key={aisle}
-                        className={`group relative bg-white/70 backdrop-blur-sm border border-white/50 rounded-3xl p-6 transition-all duration-700 hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/10 cursor-pointer ${
-                          isComplete ? 'ring-2 ring-green-400/50 bg-green-50/50' : ''
+                        className={`group relative bg-white/80 backdrop-blur-sm border-2 border-white/60 rounded-3xl p-8 transition-all duration-700 hover:scale-[1.03] hover:shadow-2xl hover:shadow-black/10 cursor-pointer ${
+                          isComplete ? 'ring-4 ring-green-400/60 bg-green-50/60 shadow-green-500/20' : 'hover:border-purple-300/50'
                         }`}
                         style={{ 
-                          animationDelay: `${aisleIndex * 100}ms`,
-                          transform: `translateY(${isComplete ? -2 : 0}px)`
+                          animationDelay: `${aisleIndex * 150}ms`,
+                          transform: `translateY(${isComplete ? -4 : 0}px)`
                         }}
                         onDragStart={() => setDraggedAisle(aisle)}
                         onDragEnd={() => setDraggedAisle(null)}
                         draggable
                       >
-                        {/* Apple-style header with icon */}
-                        <header className="flex items-center justify-between mb-5">
-                          <div className="flex items-center space-x-3">
-                            <div className={`w-12 h-12 bg-gradient-to-br ${colorGradient} rounded-2xl flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110`}>
-                              <span className="text-xl">{getAisleIcon(aisle)}</span>
+                        {/* Enhanced aisle header */}
+                        <header className="flex items-center justify-between mb-6">
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-16 h-16 bg-gradient-to-br ${colorGradient} rounded-2xl flex items-center justify-center shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                              <span className="text-2xl">{getAisleIcon(aisle)}</span>
                             </div>
                             <div>
-                              <h3 className="text-lg font-bold text-gray-900 tracking-tight">{aisle}</h3>
-                              <p className="text-sm text-gray-500">{items.length} items</p>
+                              <h3 className="text-xl font-bold text-gray-900 tracking-tight">{aisle}</h3>
+                              <p className="text-sm text-gray-500 font-medium">{items.length} items</p>
                             </div>
                           </div>
                           
-                          <div className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                          <div className={`px-4 py-2 rounded-2xl text-sm font-bold shadow-md transition-all duration-300 ${
                             isComplete 
-                              ? 'bg-green-100 text-green-700 shadow-green-200/50' 
+                              ? 'bg-gradient-to-r from-green-400 to-emerald-400 text-white shadow-green-300/50' 
                               : 'bg-gray-100 text-gray-700'
                           }`}>
                             {progress.checked}/{progress.total}
                           </div>
                         </header>
                         
-                        {/* Sophisticated progress bar */}
-                        <div className="mb-6">
-                          <div className="relative w-full h-2 bg-gray-200/50 rounded-full overflow-hidden">
+                        {/* Enhanced progress bar */}
+                        <div className="mb-8">
+                          <div className="relative w-full h-3 bg-gray-200/60 rounded-full overflow-hidden shadow-inner">
                             <div 
-                              className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out ${
+                              className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${
                                 isComplete 
                                   ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
                                   : `bg-gradient-to-r ${colorGradient}`
@@ -367,7 +459,7 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {/* Apple-style items list */}
+                        {/* Enhanced items list */}
                         <ul className="space-y-4">
                           {items.map((item, index) => {
                             const itemKey = `${aisle}-${index}`;
@@ -375,7 +467,7 @@ export default function Home() {
                             
                             return (
                               <li key={index} className="group/item">
-                                <label className="flex items-start space-x-3 cursor-pointer">
+                                <label className="flex items-start space-x-4 cursor-pointer hover:bg-gray-50/50 rounded-2xl p-2 transition-all duration-200">
                                   <div className="relative flex-shrink-0 mt-1">
                                     <input
                                       type="checkbox"
@@ -383,13 +475,13 @@ export default function Home() {
                                       onChange={() => toggleItem(aisle, index)}
                                       className="sr-only"
                                     />
-                                    <div className={`w-5 h-5 rounded-full border-2 transition-all duration-300 ${
+                                    <div className={`w-6 h-6 rounded-full border-3 transition-all duration-300 ${
                                       isChecked 
                                         ? `bg-gradient-to-br ${colorGradient} border-transparent shadow-lg scale-110` 
                                         : 'border-gray-300 group-hover/item:border-gray-400 hover:scale-105'
                                     }`}>
                                       {isChecked && (
-                                        <svg className="w-3 h-3 text-white absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-4 h-4 text-white absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
                                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                         </svg>
                                       )}
@@ -398,12 +490,12 @@ export default function Home() {
                                   <div className={`flex-1 transition-all duration-300 ${
                                     isChecked ? 'opacity-60' : 'opacity-100'
                                   }`}>
-                                    <p className={`text-sm leading-relaxed ${
+                                    <p className={`text-sm leading-relaxed font-medium ${
                                       isChecked 
                                         ? 'line-through text-gray-500' 
                                         : 'text-gray-700 group-hover/item:text-gray-900'
                                     }`}>
-                                      <span className={`font-semibold bg-gradient-to-r ${colorGradient} bg-clip-text text-transparent`}>
+                                      <span className={`font-bold bg-gradient-to-r ${colorGradient} bg-clip-text text-transparent`}>
                                         {item.quantity}
                                       </span>
                                       {' '}{item.ingredient}
@@ -415,10 +507,10 @@ export default function Home() {
                           })}
                         </ul>
 
-                        {/* Apple-style completion badge */}
+                        {/* Enhanced completion badge */}
                         {isComplete && (
-                          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-xl animate-bounce">
-                            ✓ Complete
+                          <div className="absolute -top-4 -right-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-sm font-bold px-6 py-3 rounded-full shadow-2xl animate-bounce border-4 border-white">
+                            🎉 Complete!
                           </div>
                         )}
                       </div>
@@ -426,31 +518,31 @@ export default function Home() {
                   })}
                 </div>
 
-                {/* Apple-style tips section */}
-                <div className="mt-12 p-8 bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-3xl border border-blue-200/30 backdrop-blur-sm">
-                  <div className="flex items-start space-x-4">
+                {/* Enhanced tips section */}
+                <div className="mt-16 p-10 bg-gradient-to-r from-indigo-50/50 via-purple-50/50 to-pink-50/50 rounded-3xl border-2 border-indigo-200/40 backdrop-blur-sm">
+                  <div className="flex items-start space-x-6">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                        <span className="text-xl">💡</span>
+                      <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-xl">
+                        <span className="text-3xl">💡</span>
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-lg font-bold text-gray-900 mb-3">Smart Shopping Tips</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
-                        <div className="flex items-center space-x-2">
-                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                      <h4 className="text-2xl font-bold text-gray-900 mb-6">Pro Shopping Tips</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base text-gray-700 font-medium">
+                        <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-2xl">
+                          <span className="w-3 h-3 bg-indigo-400 rounded-full flex-shrink-0"></span>
                           <span>Check items as you shop</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-1.5 h-1.5 bg-purple-400 rounded-full"></span>
+                        <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-2xl">
+                          <span className="w-3 h-3 bg-purple-400 rounded-full flex-shrink-0"></span>
                           <span>Follow your store&apos;s layout</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                        <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-2xl">
+                          <span className="w-3 h-3 bg-pink-400 rounded-full flex-shrink-0"></span>
                           <span>Save frozen items for last</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                        <div className="flex items-center space-x-3 p-3 bg-white/60 rounded-2xl">
+                          <span className="w-3 h-3 bg-emerald-400 rounded-full flex-shrink-0"></span>
                           <span>Double-check quantities</span>
                         </div>
                       </div>
@@ -461,34 +553,34 @@ export default function Home() {
             </section>
           )}
 
-          {/* Apple-style fallback state */}
+          {/* Enhanced fallback state */}
           {ingredients.length > 0 && Object.keys(organizedIngredients).length === 0 && (
             <section className="pb-20">
-              <div className="bg-white/60 backdrop-blur-2xl rounded-[2.5rem] border border-orange-200/50 shadow-2xl shadow-orange-500/5 p-8 sm:p-12">
-                <div className="text-center mb-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl">
-                    <span className="text-3xl">⚠️</span>
+              <div className="bg-white/70 backdrop-blur-2xl rounded-[3rem] border-2 border-orange-200/60 shadow-2xl shadow-orange-500/10 p-8 sm:p-12">
+                <div className="text-center mb-10">
+                  <div className="w-24 h-24 bg-gradient-to-br from-orange-400 via-red-400 to-pink-500 rounded-full mx-auto mb-8 flex items-center justify-center shadow-2xl animate-pulse">
+                    <span className="text-4xl">🔄</span>
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                    Organization Unavailable
+                  <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                    Organization is happening...
                   </h2>
-                  <p className="text-lg text-gray-600 max-w-lg mx-auto">
-                    Here&apos;s your ingredient list. You can organize it manually for now.
+                  <p className="text-xl text-gray-600 max-w-lg mx-auto">
+                    Here&apos;s your ingredient list. We&apos;re working on organizing it for you.
                   </p>
                 </div>
                 
-                <div className="bg-orange-50/50 rounded-3xl p-8 border border-orange-200/50">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center">
-                    <span className="mr-3">📝</span>
+                <div className="bg-gradient-to-r from-orange-50/60 to-red-50/60 rounded-3xl p-10 border-2 border-orange-200/50">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center justify-center">
+                    <span className="mr-4 text-3xl">📝</span>
                     Ingredients for {recipeName}
                   </h3>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {ingredients.map((item, index) => (
-                      <div key={index} className="flex items-center p-4 bg-white/60 rounded-2xl border border-orange-200/30 hover:shadow-lg transition-all duration-300">
-                        <div className="w-3 h-3 bg-gradient-to-r from-orange-400 to-red-400 rounded-full mr-4 flex-shrink-0"></div>
+                      <div key={index} className="flex items-center p-5 bg-white/70 rounded-3xl border-2 border-orange-200/40 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                        <div className="w-4 h-4 bg-gradient-to-r from-orange-400 to-red-400 rounded-full mr-5 flex-shrink-0 animate-pulse"></div>
                         <div className="flex-1">
-                          <span className="text-gray-700">
-                            <span className="font-semibold text-orange-600">{item.quantity}</span> {item.ingredient}
+                          <span className="text-gray-700 font-medium">
+                            <span className="font-bold text-orange-600">{item.quantity}</span> {item.ingredient}
                           </span>
                         </div>
                       </div>
@@ -501,43 +593,61 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Apple-style floating action button */}
+      {/* Enhanced floating action button */}
       {Object.keys(organizedIngredients).length > 0 && (
         <div className="fixed bottom-8 right-8 z-50">
           <button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-2xl shadow-blue-500/25 flex items-center justify-center text-white hover:scale-110 hover:shadow-3xl transition-all duration-300"
+            className="w-16 h-16 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-2xl shadow-purple-500/30 flex items-center justify-center text-white hover:scale-110 hover:shadow-3xl hover:shadow-purple-500/40 transition-all duration-300 group"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            <svg className="w-7 h-7 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" />
             </svg>
           </button>
         </div>
       )}
 
-      {/* Custom CSS for Apple-style animations */}
+      {/* Enhanced CSS animations */}
       <style jsx>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-8px); }
-          75% { transform: translateX(8px); }
+          25% { transform: translateX(-10px); }
+          75% { transform: translateX(10px); }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
         
         .animate-shake {
           animation: shake 0.6s ease-in-out;
         }
+        
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
 
-        /* Apple-style smooth scrolling */
+        /* Enhanced smooth scrolling */
         html {
           scroll-behavior: smooth;
         }
 
-        /* Apple-style selection */
+        /* Enhanced selection */
         ::selection {
-          background-color: rgba(59, 130, 246, 0.3);
+          background-color: rgba(147, 51, 234, 0.3);
         }
 
-        /* Apple-style focus rings */
+        /* Enhanced focus rings */
         *:focus {
           outline: none;
         }
