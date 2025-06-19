@@ -77,8 +77,8 @@ export default function Home() {
     setCheckedItems(new Set());
 
     try {
-      // First API call - Get recipe ingredients
-      const recipeResponse = await fetch('/api/recipe', {
+      // Single optimized API call - Get organized shopping list
+      const response = await fetch('/api/shopping-list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,45 +86,25 @@ export default function Home() {
         body: JSON.stringify({ recipeName }),
       });
 
-      const recipeData = await recipeResponse.json();
+      const data = await response.json();
 
-      if (!recipeResponse.ok) {
-        throw new Error(recipeData.error || 'Failed to get recipe');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate shopping list');
       }
 
-      if (recipeData.error) {
-        setError(`Recipe generation error: ${recipeData.error}`);
-        if (recipeData.rawResponse) {
-          console.log('Raw response:', recipeData.rawResponse);
-        }
-        setLoading(false);
-        return;
-      }
-
-      setIngredients(recipeData.ingredients);
-
-      // Second API call - Organize ingredients by aisle
-      const organizeResponse = await fetch('/api/organize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ingredients: recipeData.ingredients }),
-      });
-
-      const organizeData = await organizeResponse.json();
-
-      if (!organizeResponse.ok) {
-        throw new Error(organizeData.error || 'Failed to organize ingredients');
-      }
-
-      if (organizeData.error) {
-        setError(`Organization error: ${organizeData.error}`);
-        if (organizeData.rawResponse) {
-          console.log('Raw response:', organizeData.rawResponse);
+      if (data.error) {
+        setError(`Shopping list generation error: ${data.error}`);
+        if (data.rawResponse) {
+          console.log('Raw response:', data.rawResponse);
         }
       } else {
-        setOrganizedIngredients(organizeData.organizedIngredients);
+        setOrganizedIngredients(data.organizedIngredients);
+        // Convert organized ingredients back to flat list for compatibility
+        const flatIngredients: Ingredient[] = [];
+        Object.values(data.organizedIngredients as OrganizedIngredients).forEach((aisleItems) => {
+          flatIngredients.push(...aisleItems);
+        });
+        setIngredients(flatIngredients);
       }
 
     } catch (err) {
