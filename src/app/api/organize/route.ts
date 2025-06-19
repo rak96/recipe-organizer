@@ -31,7 +31,7 @@ Common supermarket aisles include:
 - Beverages
 
 Ingredients to organize:
-${ingredients.map((item: any) => `${item.quantity} ${item.ingredient}`).join('\n')}
+${ingredients.map((item: { quantity: string; ingredient: string }) => `${item.quantity} ${item.ingredient}`).join('\n')}
 
 Return only the JSON object, no additional text.
 
@@ -58,7 +58,7 @@ Example format:
     try {
       const organizedIngredients = JSON.parse(generatedText);
       return NextResponse.json({ organizedIngredients });
-    } catch (parseError) {
+    } catch {
       return NextResponse.json({ 
         error: 'Failed to parse organized ingredients',
         rawResponse: generatedText 

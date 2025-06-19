@@ -40,7 +40,7 @@ Recipe: ${recipeName}`;
       // Try to parse the JSON response
       const ingredients = JSON.parse(generatedText);
       return NextResponse.json({ ingredients });
-    } catch (parseError) {
+    } catch {
       // If JSON parsing fails, return raw text for debugging
       return NextResponse.json({ 
         error: 'Failed to parse ingredients',
