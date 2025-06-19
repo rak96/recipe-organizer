@@ -105,6 +105,12 @@ export default function Home() {
           flatIngredients.push(...aisleItems);
         });
         setIngredients(flatIngredients);
+        
+        // Show warning if there was a parsing issue but we still got results
+        if (data.warning) {
+          console.warn('Shopping list warning:', data.warning);
+          // You could also show a toast notification here if desired
+        }
       }
 
     } catch (err) {
